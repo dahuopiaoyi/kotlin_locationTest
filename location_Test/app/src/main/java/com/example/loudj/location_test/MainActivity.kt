@@ -16,11 +16,15 @@ import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
 
 class MainActivity : AppCompatActivity() {
+    //lateinit 延后初始化，定义了只能在onCreate中初始化的全局变量
     private lateinit var textView: TextView
     private lateinit var locationManager: LocationManager
+
+    //定义一个权限COde，用来识别Location权限
+    private val LOCATION_PERMISSION = 1
+
+    //使用匿名内部类创建了LocationListener的实例
     val locationListener = object : LocationListener {
-//        val textView: TextView = find(R.id.text)
-//        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         override fun onProviderDisabled(provider: String?) {
             toast("关闭了GPS")
             textView.text = "关闭了GPS"
@@ -40,19 +44,20 @@ class MainActivity : AppCompatActivity() {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }
-    private val LOCATION_PERMISSION = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        textView = find(R.id.text)
-//        val textView: TextView = find(R.id.text)
 
-        //检查是否获得了位置权限，如果没有就申请位置权限，如果有权限就刷新位置
-//        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        //对lateinit的变量进行初始化
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        textView = find(R.id.text)
+
+        //如果手机的SDK版本使用新的权限模型，检查是否获得了位置权限，如果没有就申请位置权限，如果有权限就刷新位置
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val hasLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
             if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
+                //requestPermissions是异步执行的
                 requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
                         LOCATION_PERMISSION)
             }
@@ -66,7 +71,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-//        val locationMabager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         super.onPause()
         val hasLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
         if ((locationManager != null) && ((hasLocationPermission == PackageManager.PERMISSION_GRANTED))) {
@@ -75,9 +79,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-//        val textView: TextView = find(R.id.text)
-//        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        //挂上LocationListener, 在状态变化时刷新位置显示
+        //挂上LocationListener, 在状态变化时刷新位置显示，因为requestPermissionss是异步执行的，所以要先确认是否有权限
         super.onResume()
         val hasLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
         if ((locationManager != null) && ((hasLocationPermission == PackageManager.PERMISSION_GRANTED))) {
@@ -90,8 +92,6 @@ class MainActivity : AppCompatActivity() {
     //申请下位置权限后，要刷新位置信息
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        val textView: TextView = find(R.id.text)
-//        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (requestCode == LOCATION_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 toast("获取了位置权限")
@@ -104,6 +104,7 @@ class MainActivity : AppCompatActivity() {
         textView.text = getLocation(locationManager).toString()
     }
 
+    //获取位置信息
     fun getLocation(locationManager: LocationManager): Location? {
         var location: Location? = null
         if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
