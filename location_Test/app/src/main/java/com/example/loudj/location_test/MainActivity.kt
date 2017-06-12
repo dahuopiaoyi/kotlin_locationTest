@@ -37,11 +37,11 @@ class MainActivity : AppCompatActivity() {
 
         override fun onLocationChanged(location: Location?) {
             toast("变化了")
-            showLocation(textView, locationManager)
+            showLocation(textView!!, locationManager)
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }
 
